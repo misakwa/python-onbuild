@@ -1,0 +1,73 @@
+FROM gliderlabs/alpine:3.4
+
+ENV LANG C.UTF-8
+
+# Find versions here: https://www.python.org/downloads/source/
+ONBUILD ARG PYTHON_VERSION
+
+ONBUILD RUN set -ex \
+    && if [ -z $PYTHON_VERSION ]; then echo "PYTHON_VERSION required"; exit 2; fi \
+    && echo "trying python build=$PYTHON_VERSION" \
+    && apk -q update \
+    && apk -q upgrade \
+    && apk -q add --virtual .build-deps \
+        build-base \
+        libc-dev \
+        linux-headers \
+        openssl-dev \
+        libxml2-dev \
+        libxslt-dev \
+        sqlite-dev \
+        zlib-dev \
+        xz-dev \
+        bzip2-dev \
+        readline-dev \
+        ncurses-dev \
+        gdbm-dev \
+        curl \
+        ca-certificates \
+        pax-utils \
+        gpgme \
+        gzip \
+    && cd /tmp \
+    && curl -fsSLO https://www.python.org/ftp/python/${PYTHON_VERSION%%[a-z]*}/Python-$PYTHON_VERSION.tgz \
+    && curl -fsSLO https://www.python.org/ftp/python/${PYTHON_VERSION%%[a-z]*}/Python-$PYTHON_VERSION.tgz.asc \
+    && curl -fsSL https://www.python.org/static/files/pubkeys.txt | gpg --homedir /tmp --import \
+    && curl -fsSLO https://bootstrap.pypa.io/get-pip.py \
+    && gpg --homedir /tmp --verify Python-$PYTHON_VERSION.tgz.asc \
+    && tar xzf Python-$PYTHON_VERSION.tgz \
+    && cd Python-$PYTHON_VERSION \
+    && CFLAGS="-Os -pipe -fuse-linker-plugin -flto" \
+        LDFLAGS="-pipe -fuse-linker-plugin -flto" \
+        ./configure \
+        --enable-shared \
+        --enable-loadable-sqlite-extensions \
+    && make -s -j$(getconf _NPROCESSORS_ONLN) \
+    && make -s install \
+    && cd /usr/local/bin \
+    # symlink binaries
+    && SUFFIX=${PYTHON_VERSION%.[a-z0-9]*} \
+    && if [ ! -f python-config ] && [ -f python$SUFFIX-config ]; then ln -s python$SUFFIX-config python-config; fi \
+    && if [ ! -f python ] && [ -f python$SUFFIX ]; then ln -s python$SUFFIX python; fi\
+    # install pip if not bundled with python
+    && if [ ! -f pip ]; then python /tmp/get-pip.py; fi \
+    && if [ ! -f pip ] && [ -f pip$SUFFIX ]; then ln -s pip$SUFFIX pip; fi \
+    && if [ ! -f easy_install ] && [ -f easy_install-$SUFFIX ]; then ln -s easy_install-$SUFFIX easy_install; fi\
+    # ensure pip is up to date
+    && pip install --upgrade pip \
+    && python_libs="$( \
+        scanelf -nBR /usr/local \
+            | awk '{ gsub(/,/, "\nso:", $2); print "so:" $2 }' \
+            | sort -u \
+            | xargs -r apk info --installed \
+            | sort -u \
+    )" \
+    && apk -q add --virtual .python-libs $python_libs \
+    && apk -q del -r .build-deps \
+    && rm -rf /tmp/* /var/cache/apk/* /usr/local/share/* ~/.cache \
+    && find /usr/local -depth -name 'test*' -exec rm -rf {} + \
+    && find /usr/local -depth -name __pycache__ -exec rm -rf {} + \
+    && find /usr/local -depth -name '*.pyc' -exec rm -rf {} + \
+    && find /usr/local -depth -name '*.pyo' -exec rm -rf {} + \
+    && find /usr/local -depth -name 'pydoc*' -exec rm -rf {} + \
+    && find /usr/local -depth -name 'idle*' -exec rm -rf {} +

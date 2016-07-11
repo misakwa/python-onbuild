@@ -1,0 +1,29 @@
+language: bash
+services: docker
+
+cache:
+  directories:
+    - /var/lib/docker
+
+env:
+  global:
+    - DOCKER_REPO=quay.io/$TRAVIS_REPO_SLUG
+    - DOCKER_TAG=$(cd $TRAVIS_BUILD_DIR && git describe --abbrev=0 --tags)
+    - DOCKER_BRANCH=${TRAVIS_BRANCH//\//-}
+  matrix:
+    - OS_BUILD=alpine-3.4
+    - OS_BUILD=alpine-edge
+
+script:
+  - cd $TRAVIS_BUILD_DIR/${OS_BUILD//-/\/}
+  - docker build --rm --force-rm -t $DOCKER_REPO .
+  - mkdir -p $HOME/.docker; docker save $DOCKER_REPO > $HOME/.docker/image.tar
+
+after_success:
+  - docker login -e="$DOCKER_EMAIL" -u="$DOCKER_USER" -p="$DOCKER_PASS"
+  - if [[ $DOCKER_BRANCH == "master" ]]; then
+    docker tag $DOCKER_REPO $DOCKER_REPO:latest-$OS_BUILD && docker push $DOCKER_REPO:latest-$OS_BUILD;
+    docker tag $DOCKER_REPO $DOCKER_REPO:$DOCKER_TAG-$OS_BUILD && docker push $DOCKER_REPO:$DOCKER_TAG-$OS_BUILD;
+    fi
+  - docker tag $DOCKER_REPO $DOCKER_REPO:$DOCKER_BRANCH-$OS_BUILD && docker push $DOCKER_REPO:$DOCKER_BRANCH-$OS_BUILD
+  - docker tag $DOCKER_REPO $DOCKER_REPO:$DOCKER_TAG-$OS_BUILD && docker push $DOCKER_REPO:$DOCKER_TAG-$OS_BUILD
