@@ -21,6 +21,7 @@ after_success:
   - if [[ $DOCKER_BRANCH == "master" ]]; then
     docker tag $DOCKER_REPO $DOCKER_REPO:$OS_BUILD && docker push $DOCKER_REPO:$OS_BUILD;
     docker tag $DOCKER_REPO $DOCKER_REPO:$DOCKER_TAG-$OS_BUILD && docker push $DOCKER_REPO:$DOCKER_TAG-$OS_BUILD;
+    else;
+    docker tag $DOCKER_REPO $DOCKER_REPO:$DOCKER_BRANCH-$OS_BUILD && docker push $DOCKER_REPO:$DOCKER_BRANCH-$OS_BUILD;
+    docker tag $DOCKER_REPO $DOCKER_REPO:$DOCKER_TAG-$OS_BUILD && docker push $DOCKER_REPO:$DOCKER_TAG-$OS_BUILD;
     fi
-  - docker tag $DOCKER_REPO $DOCKER_REPO:$DOCKER_BRANCH-$OS_BUILD && docker push $DOCKER_REPO:$DOCKER_BRANCH-$OS_BUILD
-  - docker tag $DOCKER_REPO $DOCKER_REPO:$DOCKER_TAG-$OS_BUILD && docker push $DOCKER_REPO:$DOCKER_TAG-$OS_BUILD
