@@ -17,7 +17,6 @@ env:
 script:
   - cd $TRAVIS_BUILD_DIR/${OS_BUILD//-/\/}
   - docker build --rm --force-rm -t $DOCKER_REPO .
-  - mkdir -p $HOME/.docker; docker save $DOCKER_REPO > $HOME/.docker/image.tar
 
 after_success:
   - docker login -e="." -u="$DOCKER_USER" -p="$DOCKER_PASS"
