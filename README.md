@@ -14,7 +14,7 @@ USAGE EXAMPLE
 Extend from another Dockerfile and specify PYTHON_VERSION on build
 
 ```
-FROM misakwa/python-onbuild:1.0-alpine-3.4
+FROM quay.io/misakwa/python-onbuild:alpine-3.4
 
 MAINTAINER you<you@example.com>
 
