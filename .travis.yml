@@ -20,7 +20,7 @@ script:
   - mkdir -p $HOME/.docker; docker save $DOCKER_REPO > $HOME/.docker/image.tar
 
 after_success:
-  - docker login -e="$DOCKER_EMAIL" -u="$DOCKER_USER" -p="$DOCKER_PASS"
+  - docker login -e="." -u="$DOCKER_USER" -p="$DOCKER_PASS"
   - if [[ $DOCKER_BRANCH == "master" ]]; then
     docker tag $DOCKER_REPO $DOCKER_REPO:latest-$OS_BUILD && docker push $DOCKER_REPO:latest-$OS_BUILD;
     docker tag $DOCKER_REPO $DOCKER_REPO:$DOCKER_TAG-$OS_BUILD && docker push $DOCKER_REPO:$DOCKER_TAG-$OS_BUILD;
