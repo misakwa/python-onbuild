@@ -34,6 +34,7 @@ $ docker run -it --rm myimage:1.0-python3.5 sh
 
 TODO
 ====
+- Fix ranlib warnings for link time optimization flag
 - Use preprocessing to share code and reduce duplication
 - Implement other OSes
 - Contribute back to https://github.com/docker-library/python
