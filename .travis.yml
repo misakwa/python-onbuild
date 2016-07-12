@@ -7,7 +7,7 @@ cache:
 
 before_cache:
   - rm -rf $HOME/.docker
-  - mkdir -p $HOME/.docker/cache && cd $HOME/.docker/cache && tar -C /var/lib -cvzf docker-cache.tgz docker
+  - mkdir -p $HOME/.docker/cache && cd $HOME/.docker/cache && sudo tar -C /var/lib -cvzf docker-cache.tgz docker
 
 env:
   global:
@@ -21,8 +21,8 @@ env:
 before_script:
   - docker login -e="." -u="$DOCKER_USER" -p="$DOCKER_PASS" quay.io
   - if [[ -e $HOME/.docker/cache/docker-cache.tgz ]]; then
-    rm -rf /var/lib/docker;
-    cd $HOME/.docker/cache && tar -C /var/lib -xvzf docker-cache.tgz;
+    sudo rm -rf /var/lib/docker;
+    cd $HOME/.docker/cache && sudo tar -C /var/lib -xvzf docker-cache.tgz;
     fi
 
 script:
