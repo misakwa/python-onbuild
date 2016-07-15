@@ -37,8 +37,8 @@ ONBUILD RUN set -ex \
     && gpg --homedir /tmp --verify Python-$PYTHON_VERSION.tgz.asc \
     && tar xzf Python-$PYTHON_VERSION.tgz \
     && cd Python-$PYTHON_VERSION \
-    && CFLAGS="-Os -pipe -fuse-linker-plugin -flto" \
-        LDFLAGS="-Os -pipe -fuse-linker-plugin -flto" \
+    && CFLAGS="-Os -pipe" \
+        LDFLAGS="-Os -pipe" \
         ./configure \
         --enable-shared \
         --enable-loadable-sqlite-extensions \

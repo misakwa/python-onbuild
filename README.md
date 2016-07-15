@@ -3,7 +3,7 @@ WHY
 When working on so many different python versions for projects, it becomes
 tedius repeating these commands to compile python from source.
 The aim of this little project here is to allow one to build a project simply by
-extending from one central image and build for a various python versions using build arguments.
+extending from one central image and build for various python versions using build arguments.
 This work borrows heavily from https://github.com/docker-library/python.
 
 Find versions here: https://www.python.org/downloads/source/
@@ -34,7 +34,6 @@ $ docker run -it --rm myimage:1.0-python3.5 sh
 
 TODO
 ====
-- Fix ranlib warnings for link time optimization flag
 - Use preprocessing to share code and reduce duplication
 - Implement other OSes
 - Contribute back to https://github.com/docker-library/python
