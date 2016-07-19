@@ -44,18 +44,28 @@ ONBUILD RUN set -ex \
         --enable-loadable-sqlite-extensions \
     && make -s -j$(getconf _NPROCESSORS_ONLN) \
     && make -s install \
+    && SUFFIX=${PYTHON_VERSION%.[a-z0-9]*} \
+    && if [ "$SUFFIX" = "2.4*" ] || [ "$SUFFIX" = "2.5*" ]; then \
+          curl -fsSLO https://raw.githubusercontent.com/pypa/setuptools/bootstrap-py24/ez_setup.py; \
+        elif [ "${PYTHON_VERSION%%.[a-z0-9]*}" -le "2" ] ; then \
+          echo "Skipping ez_setup.py; Incompatible python version $PYTHON_VERSION"; \
+        else \
+          curl -fsSLO https://bootstrap.pypa.io/ez_setup.py; \
+        fi \
     && cd /usr/local/bin \
     # symlink binaries
-    && SUFFIX=${PYTHON_VERSION%.[a-z0-9]*} \
     && if [ ! -f python-config ] && [ -f python$SUFFIX-config ]; then ln -s python$SUFFIX-config python-config; fi \
     && if [ ! -f python ] && [ -f python$SUFFIX ]; then ln -s python$SUFFIX python; fi\
-    # install pip
+    # install pip if not bundled with python
     && if [ ! -f pip ]; then python /tmp/get-pip.py; fi \
     && if [ ! -f pip ] && [ -f pip$SUFFIX ]; then ln -s pip$SUFFIX pip; fi \
     && if [ ! -f easy_install ] && [ -f easy_install-$SUFFIX ]; then ln -s easy_install-$SUFFIX easy_install; fi\
+    # ensure pip is up to date
     && pip install --upgrade pip \
+    # install setuptools if compatible
+    && if [ -f /tmp/ez_setup.py ]; then python /tmp/ez_setup.py; fi \
     && python_libs="$( \
-        scanelf --needed --nobanner --recursive /usr/local \
+        scanelf -nBR /usr/local \
             | awk '{ gsub(/,/, "\nso:", $2); print "so:" $2 }' \
             | sort -u \
             | xargs -r apk info --installed \
