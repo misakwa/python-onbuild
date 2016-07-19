@@ -74,9 +74,9 @@ ONBUILD RUN set -ex \
     && apk -q add --virtual .python-libs $python_libs \
     && apk -q del -r .build-deps \
     && rm -rf /tmp/* /var/cache/apk/* /usr/local/share/* ~/.cache \
-    && find /usr/local -depth -name 'test*' -exec rm -rf {} + \
-    && find /usr/local -depth -name __pycache__ -exec rm -rf {} + \
-    && find /usr/local -depth -name '*.pyc' -exec rm -rf {} + \
-    && find /usr/local -depth -name '*.pyo' -exec rm -rf {} + \
+    && find /usr/local -type d -depth -name 'tests' -exec rm -rf {} + \
+    && find /usr/local -type d -depth -name __pycache__ -exec rm -rf {} + \
+    && find /usr/local -type f -depth -name '*.pyc' -exec rm -rf {} + \
+    && find /usr/local -type f -depth -name '*.pyo' -exec rm -rf {} + \
     && find /usr/local -depth -name 'pydoc*' -exec rm -rf {} + \
     && find /usr/local -depth -name 'idle*' -exec rm -rf {} +
