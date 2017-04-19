@@ -1,7 +1,13 @@
 language: bash
 services: docker
 
-cache: docker
+cache:
+  directories:
+    - $HOME/.docker/cache
+
+before_cache:
+  - rm -rf $HOME/.docker
+  - mkdir -p $HOME/.docker/cache && cd $HOME/.docker/cache && sudo tar -C /var/lib -cvzf docker-cache.tgz docker
 
 env:
   global:
@@ -12,12 +18,17 @@ env:
     - OS_BUILD=alpine-3.4
     - OS_BUILD=alpine-edge
 
+before_script:
+  - docker login -e="." -u="$DOCKER_USER" -p="$DOCKER_PASS" quay.io
+  - if [[ -e $HOME/.docker/cache/docker-cache.tgz ]]; then
+    sudo rm -rf /var/lib/docker;
+    cd $HOME/.docker/cache && sudo tar -C /var/lib -xvzf docker-cache.tgz;
+    fi
+
 script:
-  - cd $TRAVIS_BUILD_DIR/${OS_BUILD//-/\/}
-  - docker build --rm --force-rm -t $DOCKER_REPO .
+  - cd $TRAVIS_BUILD_DIR/${OS_BUILD//-/\/} && docker build --rm --force-rm -t $DOCKER_REPO .
 
 after_success:
-  - docker login -e="." -u="$DOCKER_USER" -p="$DOCKER_PASS" quay.io
   - if [[ $DOCKER_BRANCH == "master" ]]; then
     docker tag $DOCKER_REPO $DOCKER_REPO:$OS_BUILD && docker push $DOCKER_REPO:$OS_BUILD;
     docker tag $DOCKER_REPO $DOCKER_REPO:$DOCKER_TAG-$OS_BUILD && docker push $DOCKER_REPO:$DOCKER_TAG-$OS_BUILD;
